@@ -39,7 +39,7 @@ class OctoWumpus:
         """Function to recursively search the prcess tree for fairness starved nodes"""
         
         if node is None:
-            return node
+            return
         
         # Calculate the fairness starvation of current node
         fairness_diff = calculate_fairness_diff(node)
