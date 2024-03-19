@@ -36,9 +36,9 @@ class ProcessTree:
         self.root = None
     
     def add_node(self, node):
-        """Will add a node to the tree according to the left and right range."""
+        """Function to add a node in the process tree."""
         if self.root is None:
-            # this new node is going to be the root node
+            # No root present --> new node is going to be the root node
             self.root = node
             self.root.left_node = None
             self.root.right_node = None
@@ -79,7 +79,7 @@ class ProcessTree:
                 return None
 
     def find_lottery_winner(self, winning_ticket):
-        """Will return the winning node"""
+        """Function to return the winning node."""
         w = self.find_lottery_winner_helper(self.root, winning_ticket)
         if w is None:
             print("An invalid winner was selected -> winner is not in the process tree.")
