@@ -15,7 +15,7 @@ class OctoWumpus:
     def initiate_protocol(self):
         """This funciton should get triggered after each epoch. """
         if self.protocol == 0:
-            # No Octo-Wumpus protocol
+            # Basic lottery scheduler - No Octo-Wumpus protocol
             pass
         elif self.protocol == 1:
             # initiate the queue protocol
