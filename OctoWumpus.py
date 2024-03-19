@@ -5,7 +5,7 @@ class OctoWumpus:
     def __init__(self, lottery_scheduler):
         # default protocol = 1 # queue
         # switch to 2 for alpha inflation
-        # 0 for no OctoWumpus
+        # 0 for basic lottery scheduler
         self.protocol = 1
         self.lottery_scheduler = lottery_scheduler
 
