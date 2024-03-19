@@ -6,7 +6,6 @@ from OctoWumpus import OctoWumpus
 from threading import Lock
 import time
 
-
 class Scheduler():
     def __init__(self):
         self.lottery_scheduler = LotteryScheduler() # lottery scheduler instance
