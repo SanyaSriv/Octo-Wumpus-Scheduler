@@ -108,11 +108,11 @@ class Scheduler():
                 # note: we do not need to check the value of self.octo_wumpus.protocol here
                 # if self.octo_wumpus.protocol was not 1, then the length of the queue would
                 # automatically be 0.
-                if len(self.octo_wumpus_queue) > 0:
+                if len(self.epoch_wumpus_queue) > 0:
                     # execute the processes for the quantas they could not get executed
-                    print("Executing the Wumpus Queue: ".format(self.octo_wumpus_queue))
-                    for i in range(0, len(self.octo_wumpus_queue)):
-                        node = self.octo_wumpus_queue[i]
+                    print("Executing the Wumpus Queue: ".format(self.epoch_wumpus_queue))
+                    for i in range(0, len(self.epoch_wumpus_queue)):
+                        node = self.epoch_wumpus_queue[i]
                         quantas_left = node.tickets - node.turns
                         total_execution_time = self.quanta_value * quantas_left # total time this node will get to execute
                         print("Executing process: {} for {} quantas.".format(node.pid, quantas_left))
@@ -124,6 +124,6 @@ class Scheduler():
                         self.pause_process(node.pid) # quanta is over -> pause process
                         if self.check_execution_status(node.pid) == 2:
                             self.kill_process(node.pid) # is process has declared completion, kill it
-                    self.octo_wumpus_queue = [] # reset for the next epoch
+                    self.epoch_wumpus_queue = [] # reset for the next epoch
                 print("Next epoch begin: {}".format((quanta_count % self.lottery_scheduler.total_num_tickets) + 1))
     
