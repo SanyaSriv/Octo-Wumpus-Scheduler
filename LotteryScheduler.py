@@ -28,7 +28,7 @@ class LotteryScheduler:
         new_node = Node(process_id, num_t, 0, 
                         None, None, 
                         self.range_upper, self.range_upper + num_t)
-        self.range_upper += num_t
+        self.range_upper += num_t + 1
         self.process_tree.add_node(new_node)
         return new_node
 
