@@ -21,7 +21,8 @@ class OctoWumpus:
             pass
         elif self.protocol == 1:
             # initiate the queue protocol
-            self.octoWumpusQueue_protocol()
+            q = self.octoWumpusQueue_protocol()
+            return q # need to return the queue for integration code
         elif self.protocol == 2:
             # initiate the alpha inflation protocol
             self.octoWumpusAlphaInflation_protocol()

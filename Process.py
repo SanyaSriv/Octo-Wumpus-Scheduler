@@ -86,3 +86,7 @@ class ProcessTree:
             print("An invalid winner was selected -> winner is not in the process tree.")
             return None
         return w
+    
+    def delete_node(self, pid):
+        # TODO: ADDING PSEUDO IMPLEMENTATION FOR NOW
+        pass

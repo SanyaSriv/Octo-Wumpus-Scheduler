@@ -35,4 +35,6 @@ class LotteryScheduler:
     def change_base_tickets(self, new_base_tickets):
         self.base_tickets = new_base_tickets
 
-
+    def delete_node(self, pid):
+        # TODO: ADDING PSEUDO IMPLEMENTATION FOR NOW
+        pass

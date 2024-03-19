@@ -1,6 +1,11 @@
 import argparse
-from threading import Thread
 import random
+from pathlib import Path
+import sys
+
+sys.path.append('.')
+
+from threading import Thread
 from integrate import Scheduler
 
 def file_op(file1, file2, pid, sched):

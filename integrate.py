@@ -98,6 +98,7 @@ class Scheduler():
                 continue # execute this thread for quanta amount of time
             self.pause_process(winning_process_pid) # quanta is over -> pause process
             if self.check_execution_status(winning_process_pid) == 2:
+                print("Process: {} has finished execution; removing from tree.".format(winning_process_pid))
                 self.kill_process(winning_process_pid) # is process has declared completion, kill it
             quanta_count += 1
             if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
@@ -123,7 +124,8 @@ class Scheduler():
                             continue # execute the process
                         self.pause_process(node.pid) # quanta is over -> pause process
                         if self.check_execution_status(node.pid) == 2:
+                            print("Process: {} has finished execution; removing from tree.".format(node.pid))
                             self.kill_process(node.pid) # is process has declared completion, kill it
                     self.epoch_wumpus_queue = [] # reset for the next epoch
-                print("Next epoch begin: {}".format((quanta_count % self.lottery_scheduler.total_num_tickets) + 1))
+                print("Next epoch begin: {}".format((quanta_count // self.lottery_scheduler.total_num_tickets) + 1))
     
