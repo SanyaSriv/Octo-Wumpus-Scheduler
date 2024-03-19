@@ -1,6 +1,6 @@
-import Node from Process
-import ProcessTree from Process
-import xorshift from Lottery_Pick_RNG
+from Process import Node
+from Process import ProcessTree
+from Lottery_pick_RNG import xorshift 
 import math
 class LotteryScheduler:
     def __init__(self):
@@ -32,8 +32,7 @@ class LotteryScheduler:
         self.process_tree.add_node(new_node)
         return new_node
 
-    def increment_quanta(self):
-        # increemt based upon the lottery picks so we know when a quanta ends
-        pass
+    def change_base_tickets(self, new_base_tickets):
+        self.base_tickets = new_base_tickets
 
 
