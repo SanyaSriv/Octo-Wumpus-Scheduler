@@ -16,7 +16,7 @@ class LotteryScheduler:
         # Set the initial internal states for xorshift pick
         seed = [self.seed0, self.seed1]
         # Call the xorshift algorithm to pick a winner within a range
-        winning_ticket, updated_seed = xorshift(seed, self.range_lower, self.range_upper)
+        winning_ticket, updated_seed = xorshift(seed, self.range_lower, self.range_upper-1)
         # Update seeds to prepare for next picking
         self.seed0, self.seed1 = updated_seed
 
@@ -28,11 +28,13 @@ class LotteryScheduler:
         new_node = Node(process_id, num_t, 0, 
                         None, None, 
                         self.range_upper, self.range_upper + num_t)
-        self.current_upper_range += num_t
+        self.range_upper += num_t + 1
         self.process_tree.add_node(new_node)
         return new_node
 
     def change_base_tickets(self, new_base_tickets):
         self.base_tickets = new_base_tickets
 
-
+    def delete_node(self, pid):
+        # TODO: ADDING PSEUDO IMPLEMENTATION FOR NOW
+        pass
