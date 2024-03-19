@@ -21,7 +21,6 @@ def file_op(file1, file2, pid, sched):
     f1.close()
     f2.close()
     sched.mark_finished(pid) # mark done
-    return 1 # when everything is done
 
 
 parser = argparse.ArgumentParser()

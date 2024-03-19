@@ -98,7 +98,7 @@ class ProcessTree:
             return [] # base case
         if root_node.alive == True:
             # if the node is alive
-            return [root_node] + self.accumulate_alive_nodes[root_node.left_node] + self.accumulate_alive_nodes[root_node.right_node]
+            return [root_node] + self.accumulate_alive_nodes(root_node.left_node) + self.accumulate_alive_nodes(root_node.right_node)
         return [] # no alive node
     def remove_nodes(self):
         alive_node_list = self.accumulate_alive_nodes(self.root)

@@ -140,5 +140,6 @@ class Scheduler():
                             print("Process: {} has finished execution; removing from tree.".format(node.pid))
                             self.kill_process(node.pid) # is process has declared completion, kill it
                     self.epoch_wumpus_queue = [] # reset for the next epoch
-                print("Next epoch begin: {}".format((quanta_count // self.lottery_scheduler.total_num_tickets) + 1))
+                if self.lottery_scheduler.total_num_tickets > 0:
+                    print("Next epoch begin: {}".format((quanta_count // self.lottery_scheduler.total_num_tickets) + 1))
     
