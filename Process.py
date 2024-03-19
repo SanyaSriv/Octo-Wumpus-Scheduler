@@ -63,21 +63,19 @@ class ProcessTree:
                 self.add_node_helper(parent_node.left_node, node)
     
     def find_lottery_winner_helper(self, node, t):
+        if node is None: # base case
+            return None
         if node.left_range <= t <= node.right_range:
             # winner found!
             return node
         if t < node.left_range:
             # recurse over the left subtree
             if node.left_node is not None:
-                self.find_lottery_winner_helper(node.left_node, t)
-            else:
-                return None
+                return self.find_lottery_winner_helper(node.left_node, t)
         else:
             # recurse over the right subtree
             if node.right_node is not None:
-                self.find_lottery_winner_helper(node.right_node, t)
-            else:
-                return None
+                return self.find_lottery_winner_helper(node.right_node, t)
 
     def find_lottery_winner(self, winning_ticket):
         """Function to return the winning node."""

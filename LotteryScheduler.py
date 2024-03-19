@@ -16,7 +16,7 @@ class LotteryScheduler:
         # Set the initial internal states for xorshift pick
         seed = [self.seed0, self.seed1]
         # Call the xorshift algorithm to pick a winner within a range
-        winning_ticket, updated_seed = xorshift(seed, self.range_lower, self.range_upper)
+        winning_ticket, updated_seed = xorshift(seed, self.range_lower, self.range_upper-1)
         # Update seeds to prepare for next picking
         self.seed0, self.seed1 = updated_seed
 

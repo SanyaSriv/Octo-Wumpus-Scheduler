@@ -68,8 +68,9 @@ class Scheduler():
         """Function for signaling a thread to begin execution."""
         # signal thread to begin exeuction
         self.m.acquire() 
-        if (self.execution_status_dictionary[pid] == 0): # do not overwrite, if the thread has declared that it is finished
-            self.execution_status_dictionary[pid] = 1 # send a flag to the thread signaling it to begin
+        if pid in self.execution_status_dictionary:
+            if (self.execution_status_dictionary[pid] == 0): # do not overwrite, if the thread has declared that it is finished
+                self.execution_status_dictionary[pid] = 1 # send a flag to the thread signaling it to begin
         self.m.release()
     
     def epoch_completed(self):
