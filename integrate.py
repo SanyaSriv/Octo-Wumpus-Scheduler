@@ -34,11 +34,16 @@ class Scheduler():
         # remove this process from the binary tree
         # use the dictionary: self.node_pid_dictionary to get the node based upon the pid and remove it from the tree: adjust the tickets 
         # of the processes accordingly because we would not want gaps in our ticket series
-        self.total_num_processes -= 1
         self.execution_status_dictionary.pop(pid)
+        self.node_pid_dictionary[pid].alive = False # marking that the node is not alive anymore
         self.node_pid_dictionary.pop(pid)
-        self.lottery_scheduler.delete_node(pid) # TODO: IMPLEMENTED THIS METHOD
     
+    def remove_process_from_tree(self):
+        """Funciton to remove a process from the tree after an epoch if it finished midway."""
+        num_alive_nodes = self.lottery_scheduler.delete_dead_nodes()
+        self.total_num_processes = num_alive_nodes # now these are the processes that are left
+        return num_alive_nodes
+
     def check_execution_status(self, pid):
         """Function for checking the execution statis of a process: whether it is allowed to begin (1), 
         whether it is paused (0) or whether it is finished (2)."""
@@ -90,6 +95,12 @@ class Scheduler():
             winning_ticket = self.lottery_scheduler.choose_winner()
             winning_process = self.lottery_scheduler.process_tree.find_lottery_winner(winning_ticket) # should return a node
             winning_process_pid = winning_process.pid
+
+            # we need to check if the winning process is the one that has finished execution
+            if winning_process_pid not in self.execution_status_dictionary:
+                # the lottery scheduler has selected a finisged process for execution
+                continue # waste this quanta
+
             print("Winning process in quanta: {} is: {}".format(quanta_count, winning_process_pid)) # printing some stats
             start_time = time.time()
             end_time = start_time + (self.quanta_value / 1000000) # finish executing this because the quanta is over 
@@ -102,9 +113,11 @@ class Scheduler():
                 self.kill_process(winning_process_pid) # is process has declared completion, kill it
             quanta_count += 1
             if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
-                # 1 epoch has been completed
+                # first let's remove all the dead processes
+                alive_nodes = self.remove_process_from_tree()
+                print("Number of alive nodes left after the epoch: {}".format(alive_nodes))
+                # 1 epoch has been completed --> initiate the OctoWumpus protocol
                 self.epoch_completed()
-
                 # execute the wumpus queue
                 # note: we do not need to check the value of self.octo_wumpus.protocol here
                 # if self.octo_wumpus.protocol was not 1, then the length of the queue would

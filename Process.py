@@ -14,6 +14,7 @@ class Node:
         self.height = height # by default
         self.turns = 0 # To track how many turns the process has received to execute
         self.parent = parent # Needed for inflation
+        self.alive = True # a process is alive by deafult
 
         # important features for the OctoWumpus protocol
         # these are the amount of chances this process got in 1 epoch
@@ -51,6 +52,9 @@ class ProcessTree:
             # node should be the right child
             if parent_node.right_node is None:
                 parent_node.right_node = node
+                # children of the newly added node should be None
+                parent_node.right_node.left_node = None
+                parent_node.right_node.right_node = None
                 parent_node.right_node.height = parent_node.height + 1
             else:
                 self.add_node_helper(parent_node.right_node, node)
@@ -58,6 +62,9 @@ class ProcessTree:
             # node should be the left child
             if parent_node.left_node is None:
                 parent_node.left_node = node
+                # children of the newly added node should be None
+                parent_node.left_node.left_node = None
+                parent_node.left_node.right_node = None
                 parent_node.left_node.height = parent_node.height + 1
             else:
                 self.add_node_helper(parent_node.left_node, node)
@@ -85,6 +92,24 @@ class ProcessTree:
             return None
         return w
     
-    def delete_node(self, pid):
-        # TODO: ADDING PSEUDO IMPLEMENTATION FOR NOW
-        pass
+    def accumulate_alive_nodes(self, root_node):
+        """Returns a list of all the dead nodes in a graph."""
+        if root_node == None:
+            return [] # base case
+        if root_node.alive == True:
+            # if the node is alive
+            return [root_node] + self.accumulate_alive_nodes[root_node.left_node] + self.accumulate_alive_nodes[root_node.right_node]
+        return [] # no alive node
+    def remove_nodes(self):
+        alive_node_list = self.accumulate_alive_nodes(self.root)
+        # we are recreating the tree
+        # step 1 --> initialize the root node to None
+        self.root = None
+        # start adding the nodes again with new ranges
+        current_ticket_number = 0 # will always assign it from 0
+        for node in alive_node_list:
+            node.left_range = current_ticket_number
+            node.right_range = current_ticket_number + node.tickets
+            current_ticket_number += 1 # to avoid range overlap
+            self.add_node(node) # reacreating the tree by adding the alive nodes with new ranges
+        return current_ticket_number, len(alive_node_list)

@@ -35,6 +35,8 @@ class LotteryScheduler:
     def change_base_tickets(self, new_base_tickets):
         self.base_tickets = new_base_tickets
 
-    def delete_node(self, pid):
-        # TODO: ADDING PSEUDO IMPLEMENTATION FOR NOW
-        pass
+    def delete_dead_nodes(self):
+        new_num_tickets, alive_nodes = self.process_tree.remove_nodes()
+        self.range_upper = new_num_tickets
+        self.total_num_tickets = new_num_tickets
+        return alive_nodes
