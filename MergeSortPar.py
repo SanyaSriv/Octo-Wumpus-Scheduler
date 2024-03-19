@@ -155,13 +155,7 @@ def merge_sort_driver(in_file, out_file, num_threads):
         with open(temp_file, 'r') as file:
             sorted_part = []
             for i in file.readlines():
-                while sched.check_execution_status(pid) != 1:
-                    # Thread waits till it gets a chance to run from scheduler
-                    continue
                 sorted_part.append(int(i.strip()))
-        while sched.check_execution_status(pid) != 1:
-            # Thread waits till it gets a chance to run from scheduler
-            continue
         os.remove(temp_file)
     
     sorted_result = merge_n_lists(sorted_numbers, pid, sched)
