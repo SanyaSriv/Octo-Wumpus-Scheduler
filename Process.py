@@ -56,11 +56,11 @@ class ProcessTree:
                 self.add_node_helper(parent_node.right_node, node)
         elif node.right_range < parent_node.left_range:
             # node should be the left child
-            if parent_node.left_child is None:
-                parent_node.left_child = node
-                parent_node.left_child.height = parent_node.height + 1
+            if parent_node.left_node is None:
+                parent_node.left_node = node
+                parent_node.left_node.height = parent_node.height + 1
             else:
-                self.add_node_helper(parent_node.left_child, node)
+                self.add_node_helper(parent_node.left_node, node)
     
     def find_lottery_winner_helper(self, node, t):
         if node.left_range <= t <= node.right_range:
@@ -68,14 +68,14 @@ class ProcessTree:
             return node
         if t < node.left_range:
             # recurse over the left subtree
-            if node.left_child is not None:
-                self.find_lottery_winner_helper(node.left_child, t)
+            if node.left_node is not None:
+                self.find_lottery_winner_helper(node.left_node, t)
             else:
                 return None
         else:
             # recurse over the right subtree
-            if node.right_child is not None:
-                self.find_lottery_winner_helper(node.right_child, t)
+            if node.right_node is not None:
+                self.find_lottery_winner_helper(node.right_node, t)
             else:
                 return None
 
