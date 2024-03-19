@@ -42,7 +42,7 @@ class OctoWumpus:
             return
         
         # Calculate the fairness starvation of current node
-        fairness_diff = calculate_fairness_diff(node)
+        fairness_diff = self.calculate_fairness_diff(node)
         
         # Check if node is starved off of fairness
         if fairness_diff > 0:
