@@ -6,14 +6,22 @@ import os
 
 from integrate import Scheduler
 
-def merge(part_l, part_r):
+def merge(part_l, part_r, pid, sched):
     # Function to merge two sorted lists
+    
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
+    
     merged = []
     
     i = 0
     j = 0
     
     while i < len(part_l) and j < len(part_r):
+        while sched.check_execution_status(pid) != 1:
+            # Thread waits till it gets a chance to run from scheduler
+            continue
         if part_l[i] < part_r[j]:
             merged.append(part_l[i])
             i += 1
@@ -22,64 +30,50 @@ def merge(part_l, part_r):
             j += 1
     
     while i < len(part_l):
+        while sched.check_execution_status(pid) != 1:
+            # Thread waits till it gets a chance to run from scheduler
+            continue
         merged.append(part_l[i])
         i += 1
     
     while j < len(part_r):
+        while sched.check_execution_status(pid) != 1:
+            # Thread waits till it gets a chance to run from scheduler
+            continue
         merged.append(part_r[j])
         j += 1
         
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
     return merged
 
-def merge_sort(arr):
+def merge_sort(arr, pid, sched):
     # Recursive mergeSort
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
     
     if len(arr) <= 1:
         return arr
     
-    mid = len(arr) // 2
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
     
     # Partioning of array into 2 lists
-    left = arr[:mid]
-    right = arr[mid:]
+    mid = len(arr) // 2
     
     # Sort left part
-    left_sorted = merge_sort(left)
+    left_sorted = merge_sort(arr[:mid], pid, sched)
     
     # Sort right part
-    right_sorted = merge_sort(right)
+    right_sorted = merge_sort(arr[mid:], pid, sched)
     
-    return merge(left_sorted, right_sorted)
-
-def parallel_merge_sort(arr, num_threads):
-    # If only 1 thread, case is same as sequential
-    if num_threads <= 1:
-        merge_sort(arr)
-        
-    # Size of each sublist to be sorted
-    sort_size = len(arr) // num_threads
-    
-    sub_sort_lists = [arr[i:i+sort_size] for i in range(0, len(arr), sort_size)]
-    
-    processes = []
-    sorted_sub_lists = []
-    
-    # Assign sub lists to threads
-    for sublist in sub_sort_lists:    
-        thread = Thread(target=lambda sub_sort: sorted_sub_lists.append(merge_sort(sublist)), args=(sublist,))
-        thread.start()
-        processes.append(thread)
-
-    # Sort each sublists assigned to each thread
-    for thread in processes:
-        thread.join()
-    
-    # Merging to get final sorted list
-    merged = sorted_sub_lists[0]
-    for sublist in sorted_sub_lists[1:]:
-        merged = merge(merged, sublist)
-        
-    return merged
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
+    return merge(left_sorted, right_sorted, pid, sched)
 
 def sort_sublist(arr, out_file, pid, sched):
     # Function to sort and write a sublist for temporary store
@@ -88,15 +82,36 @@ def sort_sublist(arr, out_file, pid, sched):
         continue
     
     # Perform basic merge sort on a sublist
-    sorted_result = merge_sort(arr)
+    sorted_result = merge_sort(arr, pid, sched)
     
     # Store sorted sublist (using file as input could be very large)
     with open(out_file, 'w') as file:
         for i in sorted_result:
+            while sched.check_execution_status(pid) != 1:
+                # Thread waits till it gets a chance to run from scheduler
+                continue
             file.write(f"{i}\n")
             
     # Thread execution is complete
     sched.mark_finished(pid)
+    
+def merge_n_lists(sorted_lists, pid, sched):
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
+    sorted_result = sorted_lists[0]
+    
+    # Merging all the sorted sublists to one
+    for part in sorted_lists[1:]:
+        while sched.check_execution_status(pid) != 1:
+            # Thread waits till it gets a chance to run from scheduler
+            continue
+        sorted_result = merge(sorted_result, part, pid, sched)
+    
+    while sched.check_execution_status(pid) != 1:
+        # Thread waits till it gets a chance to run from scheduler
+        continue
+    return sorted_result
 
 def merge_sort_driver(in_file, out_file, num_threads):
     # Function to perform parallel mergesort with schedular control
@@ -138,14 +153,18 @@ def merge_sort_driver(in_file, out_file, num_threads):
     sorted_numbers = []
     for temp_file in temp_files:
         with open(temp_file, 'r') as file:
-            sorted_numbers.append([int(i.strip()) for i in file.readlines()])
+            sorted_part = []
+            for i in file.readlines():
+                while sched.check_execution_status(pid) != 1:
+                    # Thread waits till it gets a chance to run from scheduler
+                    continue
+                sorted_part.append(int(i.strip()))
+        while sched.check_execution_status(pid) != 1:
+            # Thread waits till it gets a chance to run from scheduler
+            continue
         os.remove(temp_file)
     
-    sorted_result = sorted_numbers[0]
-    
-    # Merging all the sorted sublists to one
-    for part in sorted_numbers[1:]:
-        sorted_result = merge(sorted_result, part)
+    sorted_result = merge_n_lists(sorted_numbers, pid, sched)
     
     with open(out_file, 'w') as file:
         for i in sorted_result:
