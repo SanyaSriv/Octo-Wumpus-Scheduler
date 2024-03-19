@@ -3,7 +3,8 @@ class Currency:
         self.currency_id = id # every currency should start with an ID
 
 class Node:
-    def __init__(self, tickets, currency_id, left_node=None, right_node=None, left_range=0, right_range=0, height=1, parent=None):
+    def __init__(self, pid, tickets, currency_id, left_node=None, right_node=None, left_range=0, right_range=0, height=1, parent=None):
+        self.pid = pid
         self.tickets = tickets
         self.currency_id = currency_id
         self.left_node = left_node
