@@ -112,8 +112,8 @@ class ProcessTree:
         current_ticket_number = 0 # will always assign it from 0
         for node in alive_node_list:
             node.left_range = current_ticket_number
-            node.right_range = current_ticket_number + node.tickets
-            current_ticket_number += node.tickets + 1 # to avoid range overlap
+            node.right_range = current_ticket_number + node.tickets - 1
+            current_ticket_number += node.tickets # to avoid range overlap
             self.add_node(node) # reacreating the tree by adding the alive nodes with new ranges
         return current_ticket_number, len(alive_node_list)
     

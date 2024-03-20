@@ -23,20 +23,26 @@ class LotteryScheduler:
         return winning_ticket
     
     def add_process(self, process_id, phi = 0):
-        num_t = math.ceil(self.base_tickets * (1 + phi))
-        self.total_num_tickets += num_t
-        new_node = Node(process_id, num_t, 0, 
+        num_t = int(self.base_tickets * (1 + phi))
+        self.total_num_tickets += num_t + 1
+        # print(num_t + 1, self.range_upper, self.range_upper + num_t)
+        new_node = Node(process_id, num_t + 1, 0, 
                         None, None, 
                         self.range_upper, self.range_upper + num_t)
+        # print(new_node.right_range, new_node.left_range)
         self.range_upper += num_t + 1
         self.process_tree.add_node(new_node)
+        # print(new_node.right_range, new_node.left_range)
         return new_node
 
     def change_base_tickets(self, new_base_tickets):
         self.base_tickets = new_base_tickets
 
     def delete_dead_nodes(self):
+        # self.process_tree.print_tree(self.process_tree.root)
         new_num_tickets, alive_nodes = self.process_tree.remove_nodes()
+        # print("the new number of tickets are = ", new_num_tickets)
         self.range_upper = new_num_tickets
         self.total_num_tickets = new_num_tickets
+        # self.process_tree.print_tree(self.process_tree.root)
         return alive_nodes
