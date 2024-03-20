@@ -45,26 +45,19 @@ class OctoWumpus:
         # Calculate the fairness starvation of current node
         fairness_diff = self.calculate_fairness_diff(node)
         
-        print("inside fairness diff", fairness_diff, node.pid)
-        
         # Check if node is starved off of fairness
         if fairness_diff > 0:
             # USing negative value since we want most starved first
             heapq.heappush(self.priority_queue, (node.pid, -fairness_diff))
-            # self.priority_queue.append((node.pid, fairness_diff))
-            # self.priority_queue.sort(key=lambda x: x[1], reverse=True)
-            print("priority heap", self.prioriy_queue)
-        # Recurse on right sub tree
+
         self.add_starved_processes_to_queue(node.right_node)
-        # Recurse on left sub tree
         self.add_starved_processes_to_queue(node.left_node)
     
     def octoWumpusQueue_protocol(self):
         """Function initiates the Octo-Wumpus queue protocol"""
         self.priority_queue = []
-        
+
         self.add_starved_processes_to_queue(self.lottery_scheduler.process_tree.root)
-        print("priority q", self.priority_queue)
         return self.priority_queue
 
     def calculate_alpha(self, node, nodes_and_alphas):
@@ -74,7 +67,6 @@ class OctoWumpus:
         if node is None:
             return 
         if node.turns < node.tickets:
-            print("starvation", node.turns, node.tickets)
             alpha = max(2, node.tickets / max(1, node.turns))
             nodes_and_alphas.append((node, alpha))
 

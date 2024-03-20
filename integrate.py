@@ -56,8 +56,7 @@ class Scheduler():
     def check_execution_status(self, pid):
         """Function for checking the execution statis of a process: whether it is allowed to begin (1), 
         whether it is paused (0) or whether it is finished (2)."""
-        while (self.m.acquire() == False):
-            print("hfkjhg kfjhgdk fgh kdjfhg")
+        self.m.acquire()
         if pid in self.execution_status_dictionary:
             t = self.execution_status_dictionary[pid]
             self.m.release()
@@ -127,7 +126,7 @@ class Scheduler():
             #     self.in_progress = False
             #     print("I am out of epochs")
             #     return
-            print("Values for if", quanta_count, self.lottery_scheduler.total_num_tickets)
+            # print("Values for if", quanta_count, self.lottery_scheduler.total_num_tickets)
             if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
                 # first let's remove all the dead processes
                 alive_nodes = self.remove_process_from_tree()
@@ -137,7 +136,7 @@ class Scheduler():
                 #     return
                 # 1 epoch has been completed --> initiate the OctoWumpus protocol
                 self.epoch_completed()
-                self.lottery_scheduler.process_tree.print_tree(self.lottery_scheduler.process_tree.root)
+                # self.lottery_scheduler.process_tree.print_tree(self.lottery_scheduler.process_tree.root)
                 # execute the wumpus queue
                 # note: we do not need to check the value of self.octo_wumpus.protocol here
                 # if self.octo_wumpus.protocol was not 1, then the length of the queue would
@@ -167,6 +166,6 @@ class Scheduler():
                 # Reset quanta for new epoch
                 quanta_count = 0
                 self.reset_turns()
-                print("total tickets", self.lottery_scheduler.total_num_tickets)
+                # print("total tickets", self.lottery_scheduler.total_num_tickets)
         self.in_progress = False # scheduler's job is over
     

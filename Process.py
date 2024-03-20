@@ -118,7 +118,7 @@ class ProcessTree:
         return current_ticket_number, len(alive_node_list)
     
     def update_ranges(self, node, extra_tickets):
-        print("inside update range")
+        # print("inside update range")
         # Function to recursively update the ticket ranges 
         # for a node and its entire subtree.
         if node is None:
@@ -134,7 +134,7 @@ class ProcessTree:
 
     def update_ranges_upwards(self, node, extra_tickets):
         # Function updates the range of parent and its right sub tree
-        print("inside update ranges upward")
+        # print("inside update ranges upward")
         if node is None:
             return
         
