@@ -48,7 +48,7 @@ class OctoWumpus:
         # Check if node is starved off of fairness
         if fairness_diff > 0:
             # USing negative value since we want most starved first
-            heapq.heappush(self.prioriy_queue, (-fairness_diff, node))
+            heapq.heappush(self.prioriy_queue, (node.pid, -fairness_diff))
         
         # Recurse on right sub tree
         self.add_starved_processes_to_queue(node.right_node)
