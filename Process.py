@@ -52,6 +52,7 @@ class ProcessTree:
             # node should be the right child
             if parent_node.right_node is None:
                 parent_node.right_node = node
+                parent_node.right_node.parent = parent_node
                 # children of the newly added node should be None
                 parent_node.right_node.left_node = None
                 parent_node.right_node.right_node = None
@@ -62,6 +63,7 @@ class ProcessTree:
             # node should be the left child
             if parent_node.left_node is None:
                 parent_node.left_node = node
+                parent_node.left_node.parent = parent_node
                 # children of the newly added node should be None
                 parent_node.left_node.left_node = None
                 parent_node.left_node.right_node = None
@@ -114,3 +116,30 @@ class ProcessTree:
             current_ticket_number += node.tickets + 1 # to avoid range overlap
             self.add_node(node) # reacreating the tree by adding the alive nodes with new ranges
         return current_ticket_number, len(alive_node_list)
+    
+    def update_ranges(self, node, extra_tickets):
+        # Function to recursively update the ticket ranges 
+        # for a node and its entire subtree.
+        if node is None:
+            return
+        
+        # Update range for the current node
+        node.right_range += extra_tickets
+
+        self.update_ranges(node.left_node, extra_tickets)
+        self.update_ranges(node.right_node, extra_tickets)
+
+
+    def update_ranges_upwards(self, node, extra_tickets):
+        # Function updates the range of parent and its right sub tree
+        if node is None:
+            return
+
+        node.tickets = node.tickets + extra_tickets
+
+        # update the ranges of right subtree of the parent
+        self.update_ranges(node.right_node, extra_tickets)
+        
+        # Move up to the parent and continue updating only if node is left node of parent
+        if node.parent.left_node == node:
+            self.update_ranges_upwards(node.parent, extra_tickets)
