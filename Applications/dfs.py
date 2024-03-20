@@ -3,6 +3,8 @@ import sys
 from threading import Thread
 import random
 
+random.seed(5)
+
 sys.path.append('.')
 
 from integrate import Scheduler

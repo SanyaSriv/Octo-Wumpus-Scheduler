@@ -100,34 +100,41 @@ class Scheduler():
         """Actual integration code"""
         quanta_count = 0
         self.in_progress = True
+        epoch = 0
         while self.total_num_processes >= 1:
             # we will keep selecting winners till there is a single process in our scheduler
+            # print("i WANT to choose a winner")
             winning_ticket = self.lottery_scheduler.choose_winner()
+            # print("was able to choose a winner")
             winning_process = self.lottery_scheduler.process_tree.find_lottery_winner(winning_ticket) # should return a node
             winning_process_pid = winning_process.pid
-
+            # print(quanta_count, self.lottery_scheduler.total_num_tickets)
             # we need to check if the winning process is the one that has finished execution
             if winning_process_pid not in self.execution_status_dictionary:
+                # print("I chose a winner but this process had alrady finished so ", self.execution_status_dictionary)
                 # the lottery scheduler has selected a finisged process for execution
-                continue # waste this quanta
-
-            print("Winning process in quanta: {} is: {} with total tickets: {}".format(quanta_count, winning_process_pid, winning_process.tickets)) # printing some stats
-            start_time = time.time()
-            end_time = start_time + (self.quanta_value / 1000000) # finish executing this because the quanta is over 
-            self.execute_process_thread(winning_process_pid) # start executing this process
-            while time.time() < end_time:
-                continue # execute this thread for quanta amount of time
-            self.pause_process(winning_process_pid) # quanta is over -> pause process
-            if self.check_execution_status(winning_process_pid) == 2:
-                print("Process: {} has finished execution; removing from tree.".format(winning_process_pid))
-                self.kill_process(winning_process_pid) # is process has declared completion, kill it
-            quanta_count += 1
-            # if (self.total_num_processes == 0):
-            #     self.in_progress = False
-            #     print("I am out of epochs")
-            #     return
-            # print("Values for if", quanta_count, self.lottery_scheduler.total_num_tickets)
+                if not any(self.execution_status_dictionary.values()):
+                    self.remove_process_from_tree()
+                quanta_count += 1 # waste this quanta
+            else:
+                print("Winning process in quanta: {} is: {} with total tickets: {}".format(quanta_count, winning_process_pid, winning_process.tickets)) # printing some stats
+                start_time = time.time()
+                end_time = start_time + (self.quanta_value / 1000000) # finish executing this because the quanta is over 
+                self.execute_process_thread(winning_process_pid) # start executing this process
+                while time.time() < end_time:
+                    continue # execute this thread for quanta amount of time
+                self.pause_process(winning_process_pid) # quanta is over -> pause process
+                if self.check_execution_status(winning_process_pid) == 2:
+                    print("Process: {} has finished execution; removing from tree.".format(winning_process_pid))
+                    self.kill_process(winning_process_pid) # is process has declared completion, kill it
+                    print("success in removal.")
+                quanta_count += 1
+                # if (self.total_num_processes == 0):
+                #     self.in_progress = False
+                #     print("I am out of epochs")
+                #     return
             if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
+                epoch += 1
                 # first let's remove all the dead processes
                 alive_nodes = self.remove_process_from_tree()
                 # if (alive_nodes == 0):
@@ -161,7 +168,7 @@ class Scheduler():
                     self.epoch_wumpus_queue = [] # reset for the next epoch
                     self.remove_process_from_tree()
                 if self.lottery_scheduler.total_num_tickets > 0:
-                    print("Next epoch begin: {}".format((quanta_count // self.lottery_scheduler.total_num_tickets) + 1))
+                    print("Next epoch begin: {}".format(epoch))
                 
                 # Reset quanta for new epoch
                 quanta_count = 0
