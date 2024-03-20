@@ -30,16 +30,22 @@ def file_op(file1, file2, pid, sched):
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--n', type=int, help='Number of threads')
 parser.add_argument('-f', '--f', nargs='+', help='List of files to read/write')
+parser.add_argument('-p_mode', '--p_mode', help='Protocol mode: (Vanilla lottery (0), wumpus queue (1), alpha inflation (2))')
+
 args = parser.parse_args()
 
 print("The number of threads are: ", args.n)
 print("The files getting operated are: ", args.f)
+print("Protocol mode is: ", int(args.p_mode))
 
 number_of_threads = int(args.n)
 file_list = args.f
 
 # making a scheduler instance here
 sched = Scheduler()
+
+sched.octo_wumpus.switch_protocol(int(args.p_mode))
+
 thread_array = []
 
 file_index = 0

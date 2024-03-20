@@ -54,8 +54,12 @@ def read_file(filename):
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--n', type=int, help='Number of threads')
 parser.add_argument('-graph', '--graph', help='Enter the name of the file')
+parser.add_argument('-p_mode', '--p_mode', help='Protocol mode: (Vanilla lottery (0), wumpus queue (1), alpha inflation (2))')
+
 args = parser.parse_args()
 print(args.graph)
+print("Protocol mode is: ", int(args.p_mode))
+
 graph = args.graph
 edge_list, min_node, max_node = read_file(graph)
 
@@ -64,6 +68,8 @@ number_of_threads = args.n
 start_node = []
 end_node = []
 sched = Scheduler()
+
+sched.octo_wumpus.switch_protocol(int(args.p_mode))
 
 for i in range(0, number_of_threads):
     # i = pid 
