@@ -158,7 +158,7 @@ def merge_sort_driver(in_file, out_file, num_threads):
     
     for i in range(0, num_threads):
         threads[i].start()
-    
+    sched.octo_wumpus.switch_protocol(1)
     print("Added Processes: Ready for execution")
     # start the scheduler
     print("Starting scheduler.")
