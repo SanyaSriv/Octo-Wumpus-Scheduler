@@ -118,12 +118,14 @@ class ProcessTree:
         return current_ticket_number, len(alive_node_list)
     
     def update_ranges(self, node, extra_tickets):
+        print("inside update range")
         # Function to recursively update the ticket ranges 
         # for a node and its entire subtree.
         if node is None:
             return
         
         # Update range for the current node
+        node.left_range += extra_tickets
         node.right_range += extra_tickets
 
         self.update_ranges(node.left_node, extra_tickets)
@@ -132,10 +134,13 @@ class ProcessTree:
 
     def update_ranges_upwards(self, node, extra_tickets):
         # Function updates the range of parent and its right sub tree
+        print("inside update ranges upward")
         if node is None:
             return
-
-        node.tickets = node.tickets + extra_tickets
+        
+        # node.tickets = node.tickets + extra_tickets
+        node.left_range += extra_tickets
+        node.right_range += extra_tickets
 
         # update the ranges of right subtree of the parent
         self.update_ranges(node.right_node, extra_tickets)
@@ -143,3 +148,14 @@ class ProcessTree:
         # Move up to the parent and continue updating only if node is left node of parent
         if node.parent.left_node == node:
             self.update_ranges_upwards(node.parent, extra_tickets)
+            
+    def print_tree(self, node, level=0, prefix="Root: "):
+        if node is not None:
+            print(" " * (level*4) + prefix + f"tickets_n_turns={node.tickets, node.turns}, parent={None if node.parent is None else node.parent.currency_id}, tickets={node.tickets}, range_low={node.left_range}, range_high={node.right_range}, height={node.height}")
+            if node.left_node or node.right_node:
+                if node.left_node:
+                    self.print_tree(node.left_node, level + 1, "L--- ")
+                if node.right_node:
+                    self.print_tree(node.right_node, level + 1, "R--- ")
+        else:
+            print(" " * (level*4) + prefix + "None")

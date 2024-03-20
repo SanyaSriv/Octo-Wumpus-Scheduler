@@ -32,8 +32,8 @@ class OctoWumpus:
         
     def calculate_fairness_diff(self, node):
         """Helper function to calculate starvation of a process node"""
-        expected_fairness = node.tickets / self.lottery_scheduler.total_num_tickets
-        actual_fairness = node.turns / self.lottery_scheduler.total_num_tickets
+        expected_fairness = node.tickets
+        actual_fairness = node.turns
         return expected_fairness - actual_fairness
     
     def add_starved_processes_to_queue(self, node):
@@ -45,11 +45,15 @@ class OctoWumpus:
         # Calculate the fairness starvation of current node
         fairness_diff = self.calculate_fairness_diff(node)
         
+        print("inside fairness diff", fairness_diff, node.pid)
+        
         # Check if node is starved off of fairness
         if fairness_diff > 0:
             # USing negative value since we want most starved first
-            heapq.heappush(self.prioriy_queue, (node.pid, -fairness_diff))
-        
+            heapq.heappush(self.priority_queue, (node.pid, -fairness_diff))
+            # self.priority_queue.append((node.pid, fairness_diff))
+            # self.priority_queue.sort(key=lambda x: x[1], reverse=True)
+            print("priority heap", self.prioriy_queue)
         # Recurse on right sub tree
         self.add_starved_processes_to_queue(node.right_node)
         # Recurse on left sub tree
@@ -58,9 +62,9 @@ class OctoWumpus:
     def octoWumpusQueue_protocol(self):
         """Function initiates the Octo-Wumpus queue protocol"""
         self.priority_queue = []
-
+        
         self.add_starved_processes_to_queue(self.lottery_scheduler.process_tree.root)
-
+        print("priority q", self.priority_queue)
         return self.priority_queue
 
     def calculate_alpha(self, node, nodes_and_alphas):
@@ -70,6 +74,7 @@ class OctoWumpus:
         if node is None:
             return 
         if node.turns < node.tickets:
+            print("starvation", node.turns, node.tickets)
             alpha = max(2, node.tickets / max(1, node.turns))
             nodes_and_alphas.append((node, alpha))
 
@@ -81,15 +86,22 @@ class OctoWumpus:
         
         nodes_and_alphas = []
         # Find starved processes and calculate their inflaction value
-        self.calculate_alpha(self.lottery_scheduler.process_tree.root)
+        self.calculate_alpha(self.lottery_scheduler.process_tree.root, nodes_and_alphas)
         # Sort the starved processes by range 
-        nodes_and_alphas.sort(key=lambda node: node[1].left_range, reverse=True)
+        nodes_and_alphas.sort(key=lambda node: node[0].left_range, reverse=True)
         for node, alpha in nodes_and_alphas:
             # Count the increase in the number of tickets for the node
             extra_tickets = int(node.tickets * (alpha - 1))
+            
+            self.lottery_scheduler.total_num_tickets += extra_tickets
+            
             node.tickets = node.tickets + extra_tickets
+            node.right_range += extra_tickets
+            
             # Recursively update the ticket ranges of nodes right subtree only
             self.lottery_scheduler.process_tree.update_ranges(node.right_node, extra_tickets)
+            if node.parent is None:
+                continue
             if node.parent.left_node == node:
                 # Propogate the range update to parent and its right sibling node
                 self.lottery_scheduler.process_tree.update_ranges_upwards(node.parent, extra_tickets)

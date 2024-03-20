@@ -23,6 +23,11 @@ class Scheduler():
         Useful to check how changing the size of the quanta affects the fairness of lottery scheduler."""
         self.quanta_value = val
     
+    def reset_turns(self):
+        for i in self.node_pid_dictionary:
+            node = self.node_pid_dictionary[i]
+            node.turns = 0 # resetting it
+    
     def add_process(self, pid, phi):
         """Function for adding a process to our scheduler"""
         self.total_num_processes += 1
@@ -81,6 +86,7 @@ class Scheduler():
         if pid in self.execution_status_dictionary:
             if (self.execution_status_dictionary[pid] == 0): # do not overwrite, if the thread has declared that it is finished
                 self.execution_status_dictionary[pid] = 1 # send a flag to the thread signaling it to begin
+                self.node_pid_dictionary[pid].turns += 1
         self.m.release()
     
     def epoch_completed(self):
@@ -121,6 +127,7 @@ class Scheduler():
             #     self.in_progress = False
             #     print("I am out of epochs")
             #     return
+            print("Values for if", quanta_count, self.lottery_scheduler.total_num_tickets)
             if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
                 # first let's remove all the dead processes
                 alive_nodes = self.remove_process_from_tree()
@@ -130,6 +137,7 @@ class Scheduler():
                 #     return
                 # 1 epoch has been completed --> initiate the OctoWumpus protocol
                 self.epoch_completed()
+                self.lottery_scheduler.process_tree.print_tree(self.lottery_scheduler.process_tree.root)
                 # execute the wumpus queue
                 # note: we do not need to check the value of self.octo_wumpus.protocol here
                 # if self.octo_wumpus.protocol was not 1, then the length of the queue would
@@ -138,7 +146,7 @@ class Scheduler():
                     # execute the processes for the quantas they could not get executed
                     print("Executing the Wumpus Queue: ".format(self.epoch_wumpus_queue))
                     for i in range(0, len(self.epoch_wumpus_queue)):
-                        node = self.node_pid_dictionary[self.epoch_wumpus_queue[i]]
+                        node = self.node_pid_dictionary[self.epoch_wumpus_queue[i][0]]
                         quantas_left = node.tickets - node.turns
                         total_execution_time = self.quanta_value * quantas_left # total time this node will get to execute
                         print("Executing process: {} for {} quantas.".format(node.pid, quantas_left))
@@ -156,5 +164,9 @@ class Scheduler():
                 if self.lottery_scheduler.total_num_tickets > 0:
                     print("Next epoch begin: {}".format((quanta_count // self.lottery_scheduler.total_num_tickets) + 1))
                 
+                # Reset quanta for new epoch
+                quanta_count = 0
+                self.reset_turns()
+                print("total tickets", self.lottery_scheduler.total_num_tickets)
         self.in_progress = False # scheduler's job is over
     
