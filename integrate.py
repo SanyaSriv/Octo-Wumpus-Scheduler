@@ -12,10 +12,11 @@ class Scheduler():
         self.octo_wumpus = OctoWumpus(self.lottery_scheduler) # OctoWumpus instance
         self.total_num_processes = 0 # = number of nodes in the tree
         self.node_pid_dictionary = {} # maps nodes to the process ID for quicker access
-        self.quanta_value = 5 # init value, can also change this later on
+        self.quanta_value = 40 # init value, can also change this later on
         self.execution_status_dictionary = {} # 0 -> not allowed to begin/pause, 1 --> start, 2 --> finished execution
         self.m = Lock() # for safely accessing self.execution_status_dictionary
         self.epoch_wumpus_queue = [] # reset for each sepoch
+        self.in_progress = True
 
     def change_quanta(self, val):
         """ Function to change the size of 1 quanta (amount of time given to each winning process for execution)
@@ -34,9 +35,12 @@ class Scheduler():
         # remove this process from the binary tree
         # use the dictionary: self.node_pid_dictionary to get the node based upon the pid and remove it from the tree: adjust the tickets 
         # of the processes accordingly because we would not want gaps in our ticket series
+        self.m.acquire()
+        self.total_num_processes -= 1
         self.execution_status_dictionary.pop(pid)
         self.node_pid_dictionary[pid].alive = False # marking that the node is not alive anymore
         self.node_pid_dictionary.pop(pid)
+        self.m.release()
     
     def remove_process_from_tree(self):
         """Funciton to remove a process from the tree after an epoch if it finished midway."""
@@ -47,13 +51,14 @@ class Scheduler():
     def check_execution_status(self, pid):
         """Function for checking the execution statis of a process: whether it is allowed to begin (1), 
         whether it is paused (0) or whether it is finished (2)."""
-        self.m.acquire()
+        while (self.m.acquire() == False):
+            print("hfkjhg kfjhgdk fgh kdjfhg")
         if pid in self.execution_status_dictionary:
             t = self.execution_status_dictionary[pid]
             self.m.release()
             return t
-        self.m.release()
         # if the process is not in the dictionary, then it is by default not allowed to begin, so return 0
+        self.m.release()
         return 0
 
     def mark_finished(self,pid):
@@ -83,13 +88,13 @@ class Scheduler():
         print("1 epoch has been completed - going to initiate the Octo Wumpus protocol.") 
         if self.octo_wumpus.protocol == 1: # queue
             self.epoch_wumpus_queue = self.octo_wumpus.initiate_protocol()
-            print("Current Wumpus Queue: ", self.epoch_wumpus_queue)
         else:
             self.octo_wumpus.initiate_protocol() # alpha inflation
         
     def run_quantas(self):
         """Actual integration code"""
         quanta_count = 0
+        self.in_progress = True
         while self.total_num_processes >= 1:
             # we will keep selecting winners till there is a single process in our scheduler
             winning_ticket = self.lottery_scheduler.choose_winner()
@@ -101,7 +106,7 @@ class Scheduler():
                 # the lottery scheduler has selected a finisged process for execution
                 continue # waste this quanta
 
-            print("Winning process in quanta: {} is: {}".format(quanta_count, winning_process_pid)) # printing some stats
+            print("Winning process in quanta: {} is: {} with total tickets: {}".format(quanta_count, winning_process_pid, winning_process.tickets)) # printing some stats
             start_time = time.time()
             end_time = start_time + (self.quanta_value / 1000000) # finish executing this because the quanta is over 
             self.execute_process_thread(winning_process_pid) # start executing this process
@@ -112,10 +117,17 @@ class Scheduler():
                 print("Process: {} has finished execution; removing from tree.".format(winning_process_pid))
                 self.kill_process(winning_process_pid) # is process has declared completion, kill it
             quanta_count += 1
+            # if (self.total_num_processes == 0):
+            #     self.in_progress = False
+            #     print("I am out of epochs")
+            #     return
             if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
                 # first let's remove all the dead processes
                 alive_nodes = self.remove_process_from_tree()
-                print("Number of alive nodes left after the epoch: {}".format(alive_nodes))
+                # if (alive_nodes == 0):
+                #     self.in_progress = False # scheduler's job is over
+                #     print("I am out of epochs")
+                #     return
                 # 1 epoch has been completed --> initiate the OctoWumpus protocol
                 self.epoch_completed()
                 # execute the wumpus queue
@@ -126,7 +138,7 @@ class Scheduler():
                     # execute the processes for the quantas they could not get executed
                     print("Executing the Wumpus Queue: ".format(self.epoch_wumpus_queue))
                     for i in range(0, len(self.epoch_wumpus_queue)):
-                        node = self.epoch_wumpus_queue[i]
+                        node = self.node_pid_dictionary[self.epoch_wumpus_queue[i]]
                         quantas_left = node.tickets - node.turns
                         total_execution_time = self.quanta_value * quantas_left # total time this node will get to execute
                         print("Executing process: {} for {} quantas.".format(node.pid, quantas_left))
@@ -140,6 +152,9 @@ class Scheduler():
                             print("Process: {} has finished execution; removing from tree.".format(node.pid))
                             self.kill_process(node.pid) # is process has declared completion, kill it
                     self.epoch_wumpus_queue = [] # reset for the next epoch
+                    self.remove_process_from_tree()
                 if self.lottery_scheduler.total_num_tickets > 0:
                     print("Next epoch begin: {}".format((quanta_count // self.lottery_scheduler.total_num_tickets) + 1))
+                
+        self.in_progress = False # scheduler's job is over
     
