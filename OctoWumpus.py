@@ -63,6 +63,33 @@ class OctoWumpus:
 
         return self.priority_queue
 
+    def calculate_alpha(self, node, nodes_and_alphas):
+        # Function to calculate alpha for a given node
+        # using inverse of starvation factor 
+        # minimum value starvation factor can have is 2
+        if node is None:
+            return 
+        if node.turns < node.tickets:
+            alpha = max(2, node.tickets / max(1, node.turns))
+            nodes_and_alphas.append((node, alpha))
+
+        self.calculate_alpha(node.left_node, nodes_and_alphas)
+        self.calculate_alpha(node.right_node, nodes_and_alphas)
+
     def octoWumpusAlphaInflation_protocol(self):
         """Function is supposed to initiate the Octo-Wumpus Alpha inflation protocol"""
-        pass
+        
+        nodes_and_alphas = []
+        # Find starved processes and calculate their inflaction value
+        self.calculate_alpha(self.lottery_scheduler.process_tree.root)
+        # Sort the starved processes by range 
+        nodes_and_alphas.sort(key=lambda node: node[1].left_range, reverse=True)
+        for node, alpha in nodes_and_alphas:
+            # Count the increase in the number of tickets for the node
+            extra_tickets = int(node.tickets * (alpha - 1))
+            node.tickets = node.tickets + extra_tickets
+            # Recursively update the ticket ranges of nodes right subtree only
+            self.lottery_scheduler.process_tree.update_ranges(node.right_node, extra_tickets)
+            if node.parent.left_node == node:
+                # Propogate the range update to parent and its right sibling node
+                self.lottery_scheduler.process_tree.update_ranges_upwards(node.parent, extra_tickets)
