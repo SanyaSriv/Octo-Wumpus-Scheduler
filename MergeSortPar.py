@@ -125,7 +125,7 @@ def merge_n_lists(sorted_lists):
 
     return sorted_result
 
-def merge_sort_driver(in_file, out_file, num_threads):
+def merge_sort_driver(in_file, out_file, num_threads, p_mode):
     # Function to perform parallel mergesort with schedular control
     
     # Read data to sort from a file
@@ -136,6 +136,8 @@ def merge_sort_driver(in_file, out_file, num_threads):
     
     sched = Scheduler()
     
+    sched.octo_wumpus.switch_protocol(int(p_mode))
+
     # Size of each sublist to be sorted by a thread
     sort_size = len(input_numbers) // num_threads
     # sort_size += 1
@@ -158,7 +160,7 @@ def merge_sort_driver(in_file, out_file, num_threads):
     
     for i in range(0, num_threads):
         threads[i].start()
-    sched.octo_wumpus.switch_protocol(1)
+
     print("Added Processes: Ready for execution")
     # start the scheduler
     print("Starting scheduler.")
@@ -186,8 +188,9 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--input_file', required=True, help='File to sort path')
     parser.add_argument('-o', '--output_file', required=True, help='Sorted output file path')
     parser.add_argument('-n', '--num_threads', type=int, default=1, help='Number of threads')
+    parser.add_argument('-p_mode', '--p_mode', help='Protocol mode: (Vanilla lottery (0), wumpus queue (1), alpha inflation (2))')
     args = parser.parse_args()
     
     print("The number of threads are: ", args.num_threads)
-
-    merge_sort_driver(args.input_file, args.output_file, args.num_threads)
+    print("Protocol mode is: ", args.p_mode)
+    merge_sort_driver(args.input_file, args.output_file, args.num_threads, args.p_mode)
