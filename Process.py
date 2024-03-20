@@ -99,7 +99,8 @@ class ProcessTree:
         if root_node.alive == True:
             # if the node is alive
             return [root_node] + self.accumulate_alive_nodes(root_node.left_node) + self.accumulate_alive_nodes(root_node.right_node)
-        return [] # no alive node
+        return [] + self.accumulate_alive_nodes(root_node.left_node) + self.accumulate_alive_nodes(root_node.right_node) # no alive node
+
     def remove_nodes(self):
         alive_node_list = self.accumulate_alive_nodes(self.root)
         # we are recreating the tree
@@ -110,6 +111,6 @@ class ProcessTree:
         for node in alive_node_list:
             node.left_range = current_ticket_number
             node.right_range = current_ticket_number + node.tickets
-            current_ticket_number += 1 # to avoid range overlap
+            current_ticket_number += node.tickets + 1 # to avoid range overlap
             self.add_node(node) # reacreating the tree by adding the alive nodes with new ranges
         return current_ticket_number, len(alive_node_list)
