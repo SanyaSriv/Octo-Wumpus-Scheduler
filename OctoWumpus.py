@@ -25,7 +25,9 @@ class OctoWumpus:
             return q # need to return the queue for integration code
         elif self.protocol == 2:
             # initiate the alpha inflation protocol
+            print("before going inside the alpha infaltion protocol: ", self.lottery_scheduler.total_num_tickets)
             self.octoWumpusAlphaInflation_protocol()
+            print("after going inside the alpha infaltion protocol: ", self.lottery_scheduler.total_num_tickets)
         else:
             # Incorrect protocol choice
             raise ValueError("Invalid protocol. Protocol must be 0 or 1 or 2.")
@@ -86,6 +88,7 @@ class OctoWumpus:
             extra_tickets = int(node.tickets * (alpha - 1))
             
             self.lottery_scheduler.total_num_tickets += extra_tickets
+            self.lottery_scheduler.range_upper += extra_tickets
             
             node.tickets = node.tickets + extra_tickets
             node.right_range += extra_tickets

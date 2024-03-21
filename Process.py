@@ -159,3 +159,17 @@ class ProcessTree:
                     self.print_tree(node.right_node, level + 1, "R--- ")
         else:
             print(" " * (level*4) + prefix + "None")
+    
+    def remove_node(self, node):
+        if self.root == None:
+            return
+        if node == None:
+            return
+        if self.root == node:
+            self.root = node.right_node
+            return
+        if node.right_node != None:
+            node.parent.right_node = node.right_node
+            return
+
+

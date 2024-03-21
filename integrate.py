@@ -40,12 +40,26 @@ class Scheduler():
         # remove this process from the binary tree
         # use the dictionary: self.node_pid_dictionary to get the node based upon the pid and remove it from the tree: adjust the tickets 
         # of the processes accordingly because we would not want gaps in our ticket series
+        print("before killing: ", self.lottery_scheduler.total_num_tickets)
         self.m.acquire()
         self.total_num_processes -= 1
         self.execution_status_dictionary.pop(pid)
         self.node_pid_dictionary[pid].alive = False # marking that the node is not alive anymore
+        self.lottery_scheduler.process_tree.print_tree(self.lottery_scheduler.process_tree.root)
+        self.lottery_scheduler.process_tree.update_ranges(self.node_pid_dictionary[pid].right_node, -self.node_pid_dictionary[pid].tickets)
+        print("after update ranges")
+        self.lottery_scheduler.process_tree.print_tree(self.lottery_scheduler.process_tree.root)
+        self.lottery_scheduler.process_tree.remove_node(self.node_pid_dictionary[pid])
+        print("After re-adding the node: ")
+        print("range upper is = ", self.lottery_scheduler.range_upper)
+        self.lottery_scheduler.range_upper -= self.node_pid_dictionary[pid].tickets
+        self.node_pid_dictionary[pid].left_range = self.lottery_scheduler.range_upper
+        self.node_pid_dictionary[pid].right_range = self.lottery_scheduler.range_upper + self.node_pid_dictionary[pid].tickets
+        self.lottery_scheduler.process_tree.add_node(self.node_pid_dictionary[pid])
+        self.lottery_scheduler.process_tree.print_tree(self.lottery_scheduler.process_tree.root)
         self.node_pid_dictionary.pop(pid)
         self.m.release()
+        print("after killing: ", self.lottery_scheduler.total_num_tickets)
     
     def remove_process_from_tree(self):
         """Funciton to remove a process from the tree after an epoch if it finished midway."""
@@ -94,16 +108,20 @@ class Scheduler():
         if self.octo_wumpus.protocol == 1: # queue
             self.epoch_wumpus_queue = self.octo_wumpus.initiate_protocol()
         else:
+            print("success in removal --> 1: .", self.lottery_scheduler.total_num_tickets)
             self.octo_wumpus.initiate_protocol() # alpha inflation
+            print("success in removal --> 2: .", self.lottery_scheduler.total_num_tickets)
         
     def run_quantas(self):
         """Actual integration code"""
         quanta_count = 0
         self.in_progress = True
         epoch = 0
+        num_lottery_tickets_before_entering_epoch = 0
         while self.total_num_processes >= 1:
             # we will keep selecting winners till there is a single process in our scheduler
             # print("i WANT to choose a winner")
+            num_lottery_tickets_before_entering_epoch = self.lottery_scheduler.total_num_tickets
             winning_ticket = self.lottery_scheduler.choose_winner()
             # print("was able to choose a winner")
             winning_process = self.lottery_scheduler.process_tree.find_lottery_winner(winning_ticket) # should return a node
@@ -112,9 +130,13 @@ class Scheduler():
             # we need to check if the winning process is the one that has finished execution
             if winning_process_pid not in self.execution_status_dictionary:
                 # print("I chose a winner but this process had alrady finished so ", self.execution_status_dictionary)
+                # LOGICAL ISSUE WITH THE CONDITIONAL BELOW
                 # the lottery scheduler has selected a finisged process for execution
-                if not any(self.execution_status_dictionary.values()):
-                    self.remove_process_from_tree()
+                # print(self.execution_status_dictionary, winning_process_pid)
+                # if all(exec_stat == 2 for exec_stat in self.execution_status_dictionary.values()):
+                # # if all(self.execution_status_dictionary.values() == 2):
+                #     self.remove_process_from_tree()
+                print("Quanta {} wasted on dead process.".format(quanta_count))
                 quanta_count += 1 # waste this quanta
             else:
                 print("Winning process in quanta: {} is: {} with total tickets: {}".format(quanta_count, winning_process_pid, winning_process.tickets)) # printing some stats
@@ -127,14 +149,15 @@ class Scheduler():
                 if self.check_execution_status(winning_process_pid) == 2:
                     print("Process: {} has finished execution; removing from tree.".format(winning_process_pid))
                     self.kill_process(winning_process_pid) # is process has declared completion, kill it
-                    print("success in removal.")
+                    print("success in removal: .", self.lottery_scheduler.total_num_tickets)
                 quanta_count += 1
                 # if (self.total_num_processes == 0):
                 #     self.in_progress = False
                 #     print("I am out of epochs")
                 #     return
-            if (quanta_count % self.lottery_scheduler.total_num_tickets == 0):
+            if (quanta_count % num_lottery_tickets_before_entering_epoch == 0):
                 epoch += 1
+                print("Ttotal tickets for quanta count: ", num_lottery_tickets_before_entering_epoch)
                 # first let's remove all the dead processes
                 alive_nodes = self.remove_process_from_tree()
                 # if (alive_nodes == 0):
@@ -173,6 +196,6 @@ class Scheduler():
                 # Reset quanta for new epoch
                 quanta_count = 0
                 self.reset_turns()
-                # print("total tickets", self.lottery_scheduler.total_num_tickets)
-        self.in_progress = False # scheduler's job is over
+                print("Total tickets/epoch length:", self.lottery_scheduler.total_num_tickets)
+        self.in_progress = False # scheduler's job is over()
     
