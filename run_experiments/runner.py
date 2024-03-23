@@ -1,4 +1,4 @@
-iimport subprocess
+import subprocess
 import os
 # Running the base vanilla lottery
 
